@@ -8,6 +8,8 @@ plugins {
 group = "dev.andrey"
 version = "1.0-SNAPSHOT"
 
+val remoteGroup = "remote"
+
 repositories {
     mavenCentral()
     jcenter()
@@ -29,5 +31,39 @@ tasks.withType<Jar> {
         attributes["Main-Class"] = "ApplicationKt"
     }
 
-    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it)})
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+}
+
+tasks.register<Upload>("upload") {
+    group = remoteGroup
+    dependsOn("jar")
+}
+
+abstract class RemoteTask : DefaultTask() {
+    val host: String by project
+    val remoteDir = "${project.name}-${project.version}"
+    val jarFileName = "${project.name}-${project.version}.jar"
+
+    fun ssh(vararg args: String) {
+        project.exec {
+            commandLine("ssh", host, *args)
+        }
+    }
+
+    fun scp(vararg files: String) {
+        project.exec {
+            commandLine("scp", *files, "$host:./$remoteDir/")
+        }
+    }
+
+    @TaskAction
+    abstract fun action()
+}
+
+open class Upload : RemoteTask() {
+    override fun action() {
+        ssh("mkdir", "-p", remoteDir)
+        scp("./build/libs/$jarFileName", "app.properties", "run_app.sh", "stop_app.sh")
+        ssh("chmod", "u+x", "$remoteDir/run_app.sh", "$remoteDir/stop_app.sh")
+    }
 }
