@@ -63,7 +63,7 @@ abstract class RemoteTask : DefaultTask() {
 open class Upload : RemoteTask() {
     override fun action() {
         ssh("mkdir", "-p", remoteDir)
-        scp("./build/libs/$jarFileName", "app.properties", "run_app.sh", "stop_app.sh")
+        scp("./build/libs/$jarFileName", "production/app.properties", "production/run_app.sh", "production/stop_app.sh")
         ssh("chmod", "u+x", "$remoteDir/run_app.sh", "$remoteDir/stop_app.sh")
     }
 }

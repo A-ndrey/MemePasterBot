@@ -25,7 +25,8 @@ suspend fun main() {
                 val fileId = it.photo!!.last().fileId
                 val path = pathToFile(fileId)
                 bot.downloadFileByFileId(fileId, path)
-                val pathToModified = addText(path, it.caption ?: "")
+                val (text, rules) = parseMessage(it.caption ?: "")
+                val pathToModified = addText(path, text, rules)
                 val file = File(pathToModified)
                 bot.sendPhoto(
                     Recipient(it.from!!.id),
