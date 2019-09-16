@@ -19,6 +19,9 @@ object Properties {
     val defaultPosition: String
         get() = getValue("default.position")
 
+    val greeting: String
+        get() = getValue("greeting")
+
     init {
         val propertiesFile = System.getProperty("user.dir") + "/app.properties"
         val reader = FileReader(propertiesFile)

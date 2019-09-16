@@ -17,14 +17,20 @@ suspend fun main() {
 
     dp.dispatch {
         messages {
-            handle(CommandFilter("start", "help")) {
-                bot.answerOn(it, "Hi! I'm MemePasterBot v1.0. Send me photo with caption and I'll combine them and send you.")
+            handle(commandFilter(MessageCommand.START)) {
+                bot.answerOn(it, Properties.greeting)
+            }
+
+            handle(commandFilter(MessageCommand.HELP)) {
+                bot.answerOn(it, "List of available commands:\n$MessageCommand")
             }
 
             handle(ContentTypeFilter(ContentType.PHOTO)) {
                 val fileId = it.photo!!.last().fileId
                 val path = pathToFile(fileId)
-                bot.downloadFileByFileId(fileId, path)
+                if (!File(path).exists()) {
+                    bot.downloadFileByFileId(fileId, path)
+                }
                 val (text, rules) = parseMessage(it.caption ?: "")
                 val pathToModified = addText(path, text, rules)
                 val file = File(pathToModified)
