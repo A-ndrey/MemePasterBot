@@ -19,7 +19,6 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("rocks.waffle.telekt:telekt:0.6.7")
-    implementation("org.im4java:im4java:1.4.0")
 }
 
 tasks.withType<KotlinCompile> {

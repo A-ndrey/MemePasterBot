@@ -1,24 +1,32 @@
-import org.im4java.core.ConvertCmd
-import org.im4java.core.IMOperation
+import java.awt.Color
+import java.awt.Font
+import java.awt.GraphicsEnvironment
+import java.awt.RenderingHints
+import java.io.File
+import javax.imageio.ImageIO
 
 fun pathToFile(fileId: String) = "${System.getProperty("user.dir")}/cache/${fileId}"
 
-fun addText(path: String, text: String, rules: Map<RuleType, Value>): String {
+fun addTextG2d(path: String, text: String, rules: Map<RuleType, Value>): String {
+    val image = ImageIO.read(File(path))
+    val g2d = image.createGraphics()
+
+    g2d.font = Font("Droid", Font.PLAIN, 20)
+    val fontMetrics = g2d.fontMetrics
+    val x = (image.width - fontMetrics.stringWidth(text)) / 2
+    val y = fontMetrics.height
+    g2d.color = Color.BLACK
+    g2d.drawString(text, x, y)
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+    g2d.dispose()
+
     val modifiedPath = path + "modified.png"
-
-    val cmd = ConvertCmd()
-
-    val op = IMOperation()
-    op.addImage(path)
-    op.font(rules[RuleType.FONT] ?: Properties.defaultFont)
-    op.pointsize(rules[RuleType.SIZE]?.toInt() ?: Properties.defaultSize)
-    op.gravity(rules[RuleType.POSITION] ?: Properties.defaultPosition)
-    op.fill(rules[RuleType.COLOR] ?: Properties.defaultColor)
-    op.annotate(0)
-    op.addRawArgs(text)
-    op.addImage(modifiedPath)
-
-    cmd.run(op)
+    ImageIO.write(image, "png", File(modifiedPath))
 
     return modifiedPath
 }
+
+fun availableFonts() =
+    GraphicsEnvironment.getLocalGraphicsEnvironment().allFonts
+        .map { it.family.split(' ').first() }
+        .distinct()
